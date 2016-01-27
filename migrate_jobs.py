@@ -1,9 +1,12 @@
+from __future__ import print_function
+
 import argparse
 import io
 import random
 import struct
 import sys
 import time
+import yaml
 
 import simple_beanstalk
 
@@ -29,6 +32,12 @@ def non_cryptographically_random_bytes(length):
     for _ in range(length):
         bio.write(struct.pack('B', random.randint(0, 255)))
     return bio.getvalue()
+
+
+def print_stats(client, fo):
+    stats = dict((k, v) for (k, v) in client.stats().items() if k.startswith('current'))
+    yaml.dump(stats, fo, canonical=False, default_flow_style=False)
+    print('', file=fo)
 
 
 def main():
@@ -58,6 +67,9 @@ def main():
         job_stats = source_client.stats_job(job.job_id)
         dest_client.put_job(job.job_data, pri=job_stats['pri'], ttr=job_stats['ttr'])
         source_client.delete_job(job.job_id)
+
+    print('Beginning migration; source status:', file=sys.stderr)
+    print_stats(source_client, sys.stderr)
 
     source_client.watch('unused-fake-tube')
 
@@ -98,6 +110,11 @@ def main():
 
         if duration < DELAY_LOOP_TIME:
             time.sleep(DELAY_LOOP_TIME - duration)
+
+    print('Migration complete; source status:', file=sys.stderr)
+    print_stats(source_client, sys.stderr)
+    print('destination status:', file=sys.stderr)
+    print_stats(dest_client, sys.stderr)
 
     return 0
 

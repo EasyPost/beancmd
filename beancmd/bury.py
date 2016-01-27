@@ -11,7 +11,7 @@ def setup_parser(parser=None):
         parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--host', default='localhost', help='Host of beanstalk server (default %(default)s)')
     parser.add_argument('-p', '--port', default=11300, type=int, help='Port of beanstalk server (default %(default)s)')
-    parser.add_argument('-n', '--num-jobs', default=10, type=int, help='How many jobs to bury')
+    parser.add_argument('-n', '--num-jobs', default=None, type=int, help='How many jobs to bury (default all in tube)')
     parser.add_argument('tubes', nargs='*', help='Tubes to bury from (if not passed, defaults to all)')
     return parser
 
@@ -24,7 +24,10 @@ def run(args):
     client.watch('unused-fake-tube')
     for tube in tubes:
         client.watch(tube)
-        for job in itertools.islice(client.reserve_iter(), args.num_jobs):
+        iterator = client.reserve_iter()
+        if args.num_jobs is not None:
+            iterator = itertools.islice(iterator, args.num_jobs)
+        for job in iterator:
             client.bury_job(job.job_id)
         client.ignore(tube)
     return 0

@@ -67,7 +67,9 @@ class IntegrationBaseTestCase(TestCase):
     def setUp(self):
         self.wd = tempfile.mkdtemp()
         self.bs1 = TestingBeanStalk(os.path.join(self.wd, 'bs1'))
+        self.bs2 = TestingBeanStalk(os.path.join(self.wd, 'bs2'))
 
     def tearDown(self):
         shutil.rmtree(self.wd)
         self.bs1.stop()
+        self.bs2.stop()

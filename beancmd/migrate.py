@@ -39,6 +39,7 @@ def setup_parser(parser=None):
     parser.add_argument('-dp', '--dest-port', default=11300, type=int,
                         help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('-B', '--skip-buried', action='store_true', help='Do not migrate any buried jobs')
+    parser.add_argument('-q', '--quiet', action='store_true', help='Be quieter')
     parser.add_argument('tubes', type=str, nargs='*', help='Tubes to migrate (if not passed, migrates all)')
     return parser
 
@@ -61,8 +62,9 @@ def run(args):
         dest_client.put_job(job.job_data, pri=job_stats['pri'], ttr=job_stats['ttr'], delay=delay)
         source_client.delete_job(job.job_id)
 
-    print('Beginning migration; source status:', file=sys.stderr)
-    print_stats(source_client, sys.stderr)
+    if not args.quiet:
+        print('Beginning migration; source status:', file=sys.stderr)
+        print_stats(source_client, sys.stderr)
 
     # beanstalk doesn't let you have 0 tubes watched, and will force "default" into your tube list if
     # you would ever go to 0 tubes. So we just watch a fake tube. Meh.
@@ -94,9 +96,10 @@ def run(args):
                 # a job which you have reserved) :-(
                 migrate_job(tube, job, True)
 
-    print('Migration complete; source status:', file=sys.stderr)
-    print_stats(source_client, sys.stderr)
-    print('destination status:', file=sys.stderr)
-    print_stats(dest_client, sys.stderr)
+    if not args.quiet:
+        print('Migration complete; source status:', file=sys.stderr)
+        print_stats(source_client, sys.stderr)
+        print('destination status:', file=sys.stderr)
+        print_stats(dest_client, sys.stderr)
 
     return 0

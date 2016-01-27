@@ -40,6 +40,12 @@ class BeanstalkClient(object):
         self.current_tube = 'default'
         self.initial_watch = True
 
+    def __repr__(self):
+        return '{0}({1!r}, {2!r})'.format(self.__class__.__name__, self.host, self.port)
+
+    def __str__(self):
+        return '{0} - watching:{1}, current:{2}'.format(repr(self), self.watchlist, self.current_tube)
+
     def _connect(self):
         if self.socket is None:
             self.socket = socket.create_connection((self.host, self.port))

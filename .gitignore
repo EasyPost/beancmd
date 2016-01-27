@@ -9,3 +9,8 @@ sdist/
 
 *.pyc
 __pycache__
+
+.cache/
+.coverage
+test-py*.xml
+.tox/

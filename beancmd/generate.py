@@ -37,6 +37,7 @@ def setup_parser(parser=None):
     parser.add_argument('-S', '--seed', type=int, default=None, help='Seed for the RNG')
     parser.add_argument('number_of_tasks_per_tube', type=int, help='Number of tasks to generate per tube')
     parser.add_argument('tubes', type=str, nargs='+', help='Tubes into which tasks should be inserted')
+    return parser
 
 
 def run(args):

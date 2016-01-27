@@ -11,6 +11,5 @@ def get_tubes(client, initial_tube_list):
             if '*' in tube or '?' in tube:
                 tubes |= set(f for f in server_tubes if fnmatch.fnmatch(f, tube))
             else:
-                if tube in server_tubes:
-                    tubes.add(tube)
+                tubes.add(tube)
         return tubes

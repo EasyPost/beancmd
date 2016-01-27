@@ -4,6 +4,8 @@ import argparse
 import sys
 import yaml
 
+from . import util
+
 import simple_beanstalk
 
 
@@ -25,8 +27,9 @@ def print_stats(client, fo):
     print('', file=fo)
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def setup_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser()
     parser.add_argument('-sh', '--source-host', required=True,
                         help='Host of beanstalk server')
     parser.add_argument('-sp', '--source-port', default=11300, type=int,
@@ -36,15 +39,14 @@ def main():
     parser.add_argument('-dp', '--dest-port', default=11300, type=int,
                         help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('tubes', type=str, nargs='*', help='Tubes to migrate (if not passed, migrates all)')
-    args = parser.parse_args()
+    return parser
 
+
+def run(args):
     source_client = simple_beanstalk.BeanstalkClient(args.source_host, args.source_port)
     dest_client = simple_beanstalk.BeanstalkClient(args.dest_host, args.dest_port)
 
-    if args.tubes:
-        tubes = args.tubes
-    else:
-        tubes = source_client.list_tubes()
+    tubes = util.get_tubes(source_client, args.tubes)
 
     def migrate_job(tube, job, use_on_dest=False):
         """migrate a single job from source_client to dest_client"""
@@ -96,7 +98,3 @@ def main():
     print_stats(dest_client, sys.stderr)
 
     return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())

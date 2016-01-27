@@ -4,7 +4,8 @@ import json
 import io
 import random
 import struct
-import sys
+
+from . import util
 
 import simple_beanstalk
 
@@ -23,8 +24,9 @@ def non_cryptographically_random_bytes(length):
     return bio.getvalue()
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def setup_parser(parser=None):
+    if parser is None:
+        parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--host', default='localhost', help='Host of beanstalk server (default %(default)s)')
     parser.add_argument('-p', '--port', default=11300, type=int, help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('-s', '--task-size', default='10-1000', type=parse_range,
@@ -32,12 +34,20 @@ def main():
     parser.add_argument('-d', '--delay-range', default='0', type=parse_range,
                         help='Size range of delays to generate, in seconds (default %(default)s)')
     parser.add_argument('-B', '--binary', action='store_true', help='Make jobs random binary data')
+    parser.add_argument('-S', '--seed', type=int, default=None, help='Seed for the RNG')
     parser.add_argument('number_of_tasks_per_tube', type=int, help='Number of tasks to generate per tube')
     parser.add_argument('tubes', type=str, nargs='+', help='Tubes into which tasks should be inserted')
-    args = parser.parse_args()
 
+
+def run(args):
     client = simple_beanstalk.BeanstalkClient(args.host, args.port)
-    for tube in args.tubes:
+
+    tubes = util.get_tubes(client, args.tubes)
+
+    if args.seed is not None:
+        random.seed(args.seed)
+
+    for tube in tubes:
         client.use(tube)
         for i in range(args.number_of_tasks_per_tube):
             data_size = random.randint(*args.task_size)
@@ -51,7 +61,3 @@ def main():
             delay = random.randint(*args.delay_range)
             state, job_id = client.put_job(job, pri=priority, delay=delay)
     return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())

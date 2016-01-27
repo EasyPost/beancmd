@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 import argparse
+import base64
+import json
 import sys
 import yaml
 
@@ -40,6 +42,8 @@ def setup_parser(parser=None):
                         help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('-B', '--skip-buried', action='store_true', help='Do not migrate any buried jobs')
     parser.add_argument('-q', '--quiet', action='store_true', help='Be quieter')
+    parser.add_argument('-l', '--log', type=argparse.FileType('w'), default=None,
+                        help='Log a copy of all migrated jobs to a file as newline-delimited JSON')
     parser.add_argument('tubes', type=str, nargs='*', help='Tubes to migrate (if not passed, migrates all)')
     return parser
 
@@ -59,6 +63,14 @@ def run(args):
             delay = job_stats['time-left']
         else:
             delay = 0
+        if args.log is not None:
+            args.log.write(json.dumps({
+                'tube': tube,
+                'job_data': base64.b64encode(job.job_data).decode('ascii'),
+                'pri': job_stats['pri'],
+                'ttr': job_stats['ttr'],
+                'delay': delay
+            }) + '\n')
         dest_client.put_job(job.job_data, pri=job_stats['pri'], ttr=job_stats['ttr'], delay=delay)
         source_client.delete_job(job.job_id)
 
@@ -101,5 +113,8 @@ def run(args):
         print_stats(source_client, sys.stderr)
         print('destination status:', file=sys.stderr)
         print_stats(dest_client, sys.stderr)
+
+    if args.log is not None:
+        args.log.flush()
 
     return 0

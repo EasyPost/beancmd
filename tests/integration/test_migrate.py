@@ -1,3 +1,6 @@
+import os.path
+import json
+
 from .base import IntegrationBaseTestCase
 
 from beancmd import migrate
@@ -106,6 +109,33 @@ class MigrateTestCase(IntegrationBaseTestCase):
         assert self.bs2.status()['current-jobs-buried'] == 0
         assert self.bs2.status()['current-jobs-reserved'] == 0
 
+    def test_ignores_buried_jobs_with_B(self):
+        self.bs1.client.put_job('1', delay=0)
+        self.bs1.client.put_job('2', delay=0)
+        job = self.bs1.client.reserve_job()
+        self.bs1.client.bury_job(job.job_id)
+
+        assert self.bs1.status()['current-jobs-ready'] == 1
+        assert self.bs1.status()['current-jobs-buried'] == 1
+        assert self.bs1.status()['current-jobs-reserved'] == 0
+
+        parser = migrate.setup_parser()
+        args = parser.parse_args([
+            '-sh', self.bs1.host, '-sp', str(self.bs1.port),
+            '-dh', self.bs2.host, '-dp', str(self.bs2.port),
+            '-q', '-B',
+            'default'
+        ])
+        migrate.run(args)
+
+        assert self.bs1.status()['current-jobs-ready'] == 0
+        assert self.bs1.status()['current-jobs-buried'] == 1
+        assert self.bs1.status()['current-jobs-reserved'] == 0
+
+        assert self.bs2.status()['current-jobs-ready'] == 1
+        assert self.bs2.status()['current-jobs-buried'] == 0
+        assert self.bs2.status()['current-jobs-reserved'] == 0
+
     def test_migrate_multiple_tubes(self):
         self.bs1.client.use('some-tube')
         self.bs1.client.put_job('1', delay=0)
@@ -131,3 +161,29 @@ class MigrateTestCase(IntegrationBaseTestCase):
         assert self.bs2.status()['current-jobs-ready'] == 4
 
         assert self.bs1.client.stats_tube('ignored-tube')['current-jobs-ready'] == 1
+
+    def test_migrate_with_log(self):
+        self.bs1.client.use('some-tube')
+        self.bs1.client.put_job('data 1', delay=0)
+        self.bs1.client.put_job(b'invalid unicode \xad', delay=0)
+
+        assert self.bs1.status()['current-jobs-ready'] == 2
+
+        log_file = os.path.join(self.wd, 'migration_log')
+        parser = migrate.setup_parser()
+        args = parser.parse_args([
+            '-sh', self.bs1.host, '-sp', str(self.bs1.port),
+            '-dh', self.bs2.host, '-dp', str(self.bs2.port),
+            '-q', '-l', log_file,
+            'some-tube',
+        ])
+        migrate.run(args)
+
+        assert self.bs1.status()['current-jobs-ready'] == 0
+
+        with open(log_file, 'r') as log_f:
+            lines = [json.loads(f.strip()) for f in log_f.readlines()]
+            assert lines == [
+                {'tube': 'some-tube', 'delay': 0, 'ttr': 120, 'job_data': 'ZGF0YSAx', 'pri': 65536},
+                {'tube': 'some-tube', 'delay': 0, 'ttr': 120, 'job_data': 'aW52YWxpZCB1bmljb2RlIK0=', 'pri': 65536},
+            ]

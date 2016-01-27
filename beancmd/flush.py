@@ -5,12 +5,13 @@ from . import util
 import simple_beanstalk
 
 
-def setup_parser(parser):
+def setup_parser(parser=None):
     if parser is None:
         parser = argparse.ArgumentParser()
     parser.add_argument('-H', '--host', default='localhost', help='Host of beanstalk server (default %(default)s)')
     parser.add_argument('-p', '--port', default=11300, type=int, help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('tubes', nargs='*', help='Tubes to flush (if not passed, does them all!)')
+    return parser
 
 
 def run(args):

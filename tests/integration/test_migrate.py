@@ -105,3 +105,29 @@ class MigrateTestCase(IntegrationBaseTestCase):
         assert self.bs2.status()['current-jobs-ready'] == 2
         assert self.bs2.status()['current-jobs-buried'] == 0
         assert self.bs2.status()['current-jobs-reserved'] == 0
+
+    def test_migrate_multiple_tubes(self):
+        self.bs1.client.use('some-tube')
+        self.bs1.client.put_job('1', delay=0)
+        self.bs1.client.put_job('2', delay=0)
+        self.bs1.client.use('some-other-tube')
+        self.bs1.client.put_job('3', delay=0)
+        self.bs1.client.put_job('4', delay=0)
+        self.bs1.client.use('ignored-tube')
+        self.bs1.client.put_job('5', delay=0)
+
+        assert self.bs1.status()['current-jobs-ready'] == 5
+
+        parser = migrate.setup_parser()
+        args = parser.parse_args([
+            '-sh', self.bs1.host, '-sp', str(self.bs1.port),
+            '-dh', self.bs2.host, '-dp', str(self.bs2.port),
+            '-q',
+            'some-tube', 'some-other-tube'
+        ])
+        migrate.run(args)
+
+        assert self.bs1.status()['current-jobs-ready'] == 1
+        assert self.bs2.status()['current-jobs-ready'] == 4
+
+        assert self.bs1.client.stats_tube('ignored-tube')['current-jobs-ready'] == 1

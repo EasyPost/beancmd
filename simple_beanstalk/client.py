@@ -12,10 +12,10 @@ class BeanstalkError(Exception):
         self.message = message.decode('ascii')
 
     def __repr__(self):
-        return '{0}({1!r})'.format(self.__class__.__name__, self.message)
+        return '{0}({1!r})'.format(self.__class__.__name__, self.message)  # pragma: no cover
 
     def __str__(self):
-        return repr(self)
+        return repr(self)  # pragma: no cover
 
 
 def with_socket(f):
@@ -41,10 +41,12 @@ class BeanstalkClient(object):
         self.initial_watch = True
 
     def __repr__(self):
-        return '{0}({1!r}, {2!r})'.format(self.__class__.__name__, self.host, self.port)
+        return '{0}({1!r}, {2!r})'.format(self.__class__.__name__, self.host, self.port)  # pragma: no cover
 
     def __str__(self):
-        return '{0} - watching:{1}, current:{2}'.format(repr(self), self.watchlist, self.current_tube)
+        return '{0} - watching:{1}, current:{2}'.format(  # pragma: no cover
+            repr(self), self.watchlist, self.current_tube  # pragma: no cover
+        )  # pragma: no cover
 
     def _connect(self):
         if self.socket is None:
@@ -179,6 +181,12 @@ class BeanstalkClient(object):
         return job_status
 
     @with_socket
+    def stats_tube(self, socket, tube_name):
+        self.send_message('stats-tube {0}'.format(tube_name), socket)
+        body = self.receive_data_with_prefix(b'OK', socket)
+        return yaml.safe_load(body)
+
+    @with_socket
     def reserve_job(self, socket, timeout=5):
         if not self.watchlist:
             raise ValueError('Select a tube or two before reserving a job')
@@ -246,18 +254,3 @@ class BeanstalkClient(object):
     def kick_jobs(self, socket, num_jobs):
         self.send_message('kick {0}'.format(num_jobs), socket)
         return self.receive_id(socket)
-
-
-if __name__ == '__main__':
-    # dumb example use
-    import random
-    c = BeanstalkClient('localhost', 11300)
-    jid = c.put_job('foo')[1]
-    c.watch('default')
-    while c.stats()['current-jobs-ready']:
-        j = c.reserve_job()
-        job_stats = c.stats_job(j.job_id)
-        if random.random() < 0.5:
-            c.delete_job(j.job_id)
-        else:
-            c.release_job(j.job_id, pri=job_stats['pri'])

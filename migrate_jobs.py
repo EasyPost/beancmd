@@ -75,23 +75,19 @@ def main():
                 migrate_job(tube, job)
         source_client.ignore(tube)
 
-    # watch all the tubes
-    for tube in tubes:
-        source_client.watch(tube)
-
     # clean up the buried/delayed jobs. Don't bother doing these one tube at a time
     for tube in tubes:
         # peek commands only work on the USEd tube, not the WATCHd tubes
         source_client.use(tube)
 
-        # XXX: this is racy. The job could pop out of the delayed iter and be picked up by a consumer
-        # while we're migrating it.
+        # XXX: this is racy. The job could pop out of the delayed iter and be picked up by a
+        # consumer while we're migrating it.
         for job in source_client.peek_delayed_iter():
             migrate_job(tube, job, True)
 
         for job in source_client.peek_buried_iter():
-            # XXX: there seems to be no way to re-bury this job on the other end
-            # (you can only bury a job which you have reserved) :-(
+            # XXX: there seems to be no way to re-bury this job on the other end (you can only bury
+            # a job which you have reserved) :-(
             migrate_job(tube, job, True)
 
     print('Migration complete; source status:', file=sys.stderr)

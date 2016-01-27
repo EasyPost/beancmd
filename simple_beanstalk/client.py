@@ -218,7 +218,7 @@ class BeanstalkClient(object):
 
     def peek_buried_iter(self):
         """Peek at jobs in sequence"""
-        return self._common_iter(self.peek_delayed, 'NOT_FOUND')
+        return self._common_iter(self.peek_buried, 'NOT_FOUND')
 
     @with_socket
     def delete_job(self, socket, job_id):

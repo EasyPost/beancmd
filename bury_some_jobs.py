@@ -22,7 +22,7 @@ def main():
     client.watch('unused-fake-tube')
     for tube in tubes:
         client.watch(tube)
-        for job in itertools.islice(client.reserve_iter_nb(), args.num_jobs):
+        for job in itertools.islice(client.reserve_iter(), args.num_jobs):
             client.bury_job(job.job_id)
         client.ignore(tube)
     return 0

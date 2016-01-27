@@ -181,17 +181,38 @@ class BeanstalkClient(object):
         return Job(job_id, job_data)
 
     @with_socket
-    def reserve_iter_nb(self, socket):
-        """Reserve jobs as an iterator. Ends iteration when there are no more jobs immediately available"""
+    def peek_delayed(self, socket):
+        self.send_message('peek-delayed', socket)
+        job_id, job_data = self.receive_id_and_data_with_prefix(b'FOUND', socket)
+        return Job(job_id, job_data)
+
+    @with_socket
+    def peek_buried(self, socket):
+        self.send_message('peek-buried', socket)
+        job_id, job_data = self.receive_id_and_data_with_prefix(b'FOUND', socket)
+        return Job(job_id, job_data)
+
+    def _common_iter(self, kallable, error):
         while True:
             try:
-                job = self.reserve_job(0)
+                job = kallable()
             except BeanstalkError as e:
-                if e.message != 'TIMED_OUT':
+                if e.message != error:
                     raise
-                else:
-                    break
+                break
             yield job
+
+    def reserve_iter(self):
+        """Reserve jobs as an iterator. Ends iteration when there are no more jobs immediately available"""
+        return self._common_iter(lambda: self.reserve_job(0), 'TIMED_OUT')
+
+    def peek_delayed_iter(self):
+        """Peek at jobs in sequence"""
+        return self._common_iter(self.peek_delayed, 'NOT_FOUND')
+
+    def peek_buried_iter(self):
+        """Peek at jobs in sequence"""
+        return self._common_iter(self.peek_delayed, 'NOT_FOUND')
 
     @with_socket
     def delete_job(self, socket, job_id):

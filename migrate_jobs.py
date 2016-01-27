@@ -5,14 +5,9 @@ import io
 import random
 import struct
 import sys
-import time
 import yaml
 
 import simple_beanstalk
-
-
-# how often to check for delayed jobs
-DELAY_LOOP_TIME = 30
 
 
 def chunk(iterable, chunk_size):
@@ -65,7 +60,11 @@ def main():
         if use_on_dest:
             dest_client.use(tube)
         job_stats = source_client.stats_job(job.job_id)
-        dest_client.put_job(job.job_data, pri=job_stats['pri'], ttr=job_stats['ttr'])
+        if job_stats['state'] == 'delayed':
+            delay = job_stats['time-left']
+        else:
+            delay = 0
+        dest_client.put_job(job.job_data, pri=job_stats['pri'], ttr=job_stats['ttr'], delay=delay)
         source_client.delete_job(job.job_id)
 
     print('Beginning migration; source status:', file=sys.stderr)
@@ -73,11 +72,12 @@ def main():
 
     source_client.watch('unused-fake-tube')
 
-    # do one pass, one tube at a time, to move over ready jobs
+    # do one pass, one tube at a time, to move over ready jobs. batch these up and coalesce the USE
+    # statements so that these go quickly
     for tube in tubes:
         source_client.watch(tube)
         dest_client.use(tube)
-        for job_chunk in chunk(source_client.reserve_iter_nb(), 10):
+        for job_chunk in chunk(source_client.reserve_iter(), 10):
             for job in job_chunk:
                 migrate_job(tube, job)
         source_client.ignore(tube)
@@ -86,30 +86,17 @@ def main():
     for tube in tubes:
         source_client.watch(tube)
 
-    # If there are buried jobs, kick them
-    buried_jobs = source_client.stats()['current-jobs-buried']
+    # clean up the buried/delayed jobs. Don't bother doing these one tube at a time
+    for tube in tubes:
+        source_client.use(tube)
 
-    if buried_jobs:
-        for tube in tubes:
-            source_client.use(tube)
-            # XXX this is not transactionally safe if someone else runs KICK in parallel
-            source_client.kick_jobs(buried_jobs)
-
-    # there might still be reserved jobs. If so, let's
-    while True:
-        start = time.time()
-        stats = source_client.stats()
-        if stats['current-jobs-ready'] + stats['current-jobs-delayed'] == 0:
-            break
-
-        for job in source_client.reserve_iter_nb():
+        for job in source_client.peek_delayed_iter():
             migrate_job(tube, job, True)
-        end = time.time()
 
-        duration = end - start
-
-        if duration < DELAY_LOOP_TIME:
-            time.sleep(DELAY_LOOP_TIME - duration)
+        for job in source_client.peek_buried_iter():
+            # XXX: there seems to be no way to re-bury this job on the other end
+            # (you can only bury a job which you have reserved) :-(
+            migrate_job(tube, job, True)
 
     print('Migration complete; source status:', file=sys.stderr)
     print_stats(source_client, sys.stderr)

@@ -17,17 +17,17 @@ def main():
     else:
         tubes = client.list_tubes()
 
+    client.watch('unused-fake-tube')
     for tube in tubes:
         client.watch(tube)
-        while True:
-            try:
-                job = client.reserve_job(timeout=0)
-            except simple_beanstalk.BeanstalkError as e:
-                if e.message != 'TIMED_OUT':
-                    raise
-                else:
-                    break
+        client.use(tube)
+        for job in client.reserve_iter():
             client.delete_job(job.job_id)
+        for job in client.peek_delayed_iter():
+            client.delete_job(job.job_id)
+        for job in client.peek_buried_iter():
+            client.delete_job(job.job_id)
+        client.ignore(tube)
     return 0
 
 

@@ -1,9 +1,6 @@
 from __future__ import print_function
 
 import argparse
-import io
-import random
-import struct
 import sys
 import yaml
 
@@ -20,13 +17,6 @@ def chunk(iterable, chunk_size):
             chunk = []
     if chunk:
         yield chunk
-
-
-def non_cryptographically_random_bytes(length):
-    bio = io.BytesIO()
-    for _ in range(length):
-        bio.write(struct.pack('B', random.randint(0, 255)))
-    return bio.getvalue()
 
 
 def print_stats(client, fo):
@@ -57,6 +47,7 @@ def main():
         tubes = source_client.list_tubes()
 
     def migrate_job(tube, job, use_on_dest=False):
+        """migrate a single job from source_client to dest_client"""
         if use_on_dest:
             dest_client.use(tube)
         job_stats = source_client.stats_job(job.job_id)
@@ -70,6 +61,8 @@ def main():
     print('Beginning migration; source status:', file=sys.stderr)
     print_stats(source_client, sys.stderr)
 
+    # beanstalk doesn't let you have 0 tubes watched, and will force "default" into your tube list if
+    # you would ever go to 0 tubes. So we just watch a fake tube. Meh.
     source_client.watch('unused-fake-tube')
 
     # do one pass, one tube at a time, to move over ready jobs. batch these up and coalesce the USE
@@ -88,8 +81,11 @@ def main():
 
     # clean up the buried/delayed jobs. Don't bother doing these one tube at a time
     for tube in tubes:
+        # peek commands only work on the USEd tube, not the WATCHd tubes
         source_client.use(tube)
 
+        # XXX: this is racy. The job could pop out of the delayed iter and be picked up by a consumer
+        # while we're migrating it.
         for job in source_client.peek_delayed_iter():
             migrate_job(tube, job, True)
 

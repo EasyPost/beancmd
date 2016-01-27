@@ -5,6 +5,7 @@ from . import bury
 from . import flush
 from . import generate
 from . import migrate
+from . import stats
 
 
 COMMANDS = (
@@ -12,6 +13,7 @@ COMMANDS = (
     ('flush', 'Delete all jobs from a set of tubes', flush),
     ('generate', 'Generate random data for testing', generate),
     ('migrate', 'Migrate jobs between beanstalkd instances', migrate),
+    ('stats', 'Print out the stats of a beanstalk instance', stats)
 )
 
 

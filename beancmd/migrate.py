@@ -38,6 +38,7 @@ def setup_parser(parser=None):
                         help='Host of beanstalk server')
     parser.add_argument('-dp', '--dest-port', default=11300, type=int,
                         help='Port of beanstalk server (default %(default)s)')
+    parser.add_argument('-B', '--skip-buried', action='store_true', help='Do not migrate any buried jobs')
     parser.add_argument('tubes', type=str, nargs='*', help='Tubes to migrate (if not passed, migrates all)')
     return parser
 
@@ -87,10 +88,11 @@ def run(args):
         for job in source_client.peek_delayed_iter():
             migrate_job(tube, job, True)
 
-        for job in source_client.peek_buried_iter():
-            # XXX: there seems to be no way to re-bury this job on the other end (you can only bury
-            # a job which you have reserved) :-(
-            migrate_job(tube, job, True)
+        if not args.skip_buried:
+            for job in source_client.peek_buried_iter():
+                # XXX: there seems to be no way to re-bury this job on the other end (you can only bury
+                # a job which you have reserved) :-(
+                migrate_job(tube, job, True)
 
     print('Migration complete; source status:', file=sys.stderr)
     print_stats(source_client, sys.stderr)

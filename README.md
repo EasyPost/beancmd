@@ -1,12 +1,18 @@
-This repo contains some tools for manipulating Beanstalk queues. They're kind of lame, but have a few advantages over existing tools (e.g., [beanstalk-tools](https://github.com/dustin/beanstalk-tools)):
+*beancmd* is a simple, self-contained command-line for [beanstalkd](http://kr.github.io/beanstalkd/). It contains its own, minimal, client (`simple_beanstalk`) and should function on Python 2.6 or above.
 
- - No dependencies except Python 2.7+ and PyYAML
- - Not implemented in PHP
- - No magic
+## Dependencies
 
-Tools provided:
+ - Python 2.6+ or 3.3+
+ - `python-argparse` if using Python 2.6 (not required on any newer version)
+ - [`PyYAML`](http://pyyaml.org/) 3.x
 
- - *`migrate_jobs.py`*: Migrate jobs between two beanstalk instances, attempting to preserve as much metadata as possible
- - *`generate_data.py`*: Generate synthetic Beanstalk data
- - *`flush.py`*: Purge a tube
- - *`bury_some_jobs.py`*: Mark the top N jobs in each tube as buried
+## Usage
+
+If you install with `python setup.py install` or through pip, this should drop a program named `beancmd` into your PYTHONHOME. Otherwise, you can use `PYTHONPATH=. python -m beancmd.beancmd` to get the same effect.
+
+### Functions
+
+ * `beancmd migrate`: Migrate jobs between beanstalk instances, attempting to preserve as much metadata as possible. Note that it's currently impossible for us to preserve the buried status of jobs, so when they're migrated, they'll become un-buried. You can skip migrating buried jobs with the `-B` flag
+ * `beancmd flush`: Delete all jobs in a tube or set of tubes
+ * `beancmd generate`: Generate synthetic data for testing
+ * `beancmd bury`: Bury jobs at the top of a tube or set of tubes

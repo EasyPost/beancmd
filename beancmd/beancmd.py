@@ -1,6 +1,8 @@
 import argparse
 import sys
 
+from . import __version__
+
 from . import bury
 from . import flush
 from . import generate
@@ -20,8 +22,9 @@ COMMANDS = (
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(title='commands')
+    parser = argparse.ArgumentParser(prog='beancmd')
+    parser.add_argument('-V', '--version', version='%(prog)s {0}'.format(__version__), action='version')
+    subparsers = parser.add_subparsers(title='commands', metavar='COMMAND')
 
     for (command, help_string, module) in COMMANDS:
         this_parser = subparsers.add_parser(command, help=help_string)

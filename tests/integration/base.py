@@ -8,7 +8,10 @@ import subprocess
 import time
 import yaml
 
+import mock
 from unittest import TestCase
+
+from beancmd import util
 
 import simple_beanstalk
 
@@ -94,8 +97,11 @@ class IntegrationBaseTestCase(TestCase):
         self.wd = tempfile.mkdtemp()
         self.bs1 = TestingBeanStalk(os.path.join(self.wd, 'bs1'))
         self.bs2 = TestingBeanStalk(os.path.join(self.wd, 'bs2'))
+        self.tqdm_patcher = mock.patch.object(util, 'tqdm', None)
+        self.tqdm_patcher.start()
 
     def tearDown(self):
         shutil.rmtree(self.wd)
         self.bs1.stop()
         self.bs2.stop()
+        self.tqdm_patcher.stop()

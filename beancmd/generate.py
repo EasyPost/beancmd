@@ -1,9 +1,7 @@
 import argparse
 import base64
 import json
-import io
 import random
-import struct
 
 from . import util
 
@@ -18,10 +16,7 @@ def parse_range(string):
 
 
 def non_cryptographically_random_bytes(length):
-    bio = io.BytesIO()
-    for _ in range(length):
-        bio.write(struct.pack('B', random.randint(0, 255)))
-    return bio.getvalue()
+    return bytes(bytearray(random.getrandbits(8) for _ in range(length)))
 
 
 def setup_parser(parser=None):

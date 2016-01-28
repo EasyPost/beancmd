@@ -26,6 +26,14 @@ def with_socket(f):
     return inner
 
 
+def yaml_load(fo):
+    # yaml.safe_load will never use the C loader; we have to detect it ourselves
+    if hasattr(yaml, 'CSafeLoader'):
+        return yaml.load(fo, Loader=yaml.CSafeLoader)
+    else:
+        return yaml.safe_load(fo)
+
+
 class BeanstalkClient(object):
     """Simple wrapper around the Beanstalk API.
 
@@ -133,14 +141,14 @@ class BeanstalkClient(object):
     def list_tubes(self, socket):
         self.send_message('list-tubes', socket)
         body = self.receive_data_with_prefix(b'OK', socket)
-        tubes = yaml.safe_load(body)
+        tubes = yaml_load(body)
         return tubes
 
     @with_socket
     def stats(self, socket):
         self.send_message('stats', socket)
         body = self.receive_data_with_prefix(b'OK', socket)
-        stats = yaml.safe_load(body)
+        stats = yaml_load(body)
         return stats
 
     @with_socket
@@ -177,14 +185,14 @@ class BeanstalkClient(object):
     def stats_job(self, socket, job_id):
         self.send_message('stats-job {0}'.format(job_id), socket)
         body = self.receive_data_with_prefix(b'OK', socket)
-        job_status = yaml.safe_load(body)
+        job_status = yaml_load(body)
         return job_status
 
     @with_socket
     def stats_tube(self, socket, tube_name):
         self.send_message('stats-tube {0}'.format(tube_name), socket)
         body = self.receive_data_with_prefix(b'OK', socket)
-        return yaml.safe_load(body)
+        return yaml_load(body)
 
     @with_socket
     def reserve_job(self, socket, timeout=5):

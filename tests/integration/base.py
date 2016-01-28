@@ -27,7 +27,7 @@ class TestingBeanStalk(object):
         s.close()
         self.host = host
         self.port = port
-        cmdline = ['beanstalkd', '-b', wal_directory, '-p', str(self.port)]
+        cmdline = ['beanstalkd', '-b', wal_directory, '-l', self.host, '-p', str(self.port)]
         self.p = subprocess.Popen(cmdline)
         start_time = time.time()
         self.client = simple_beanstalk.BeanstalkClient(self.host, self.port)

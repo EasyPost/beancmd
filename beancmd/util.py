@@ -1,9 +1,15 @@
+import sys
 import fnmatch
+
+try:
+    import tqdm
+except ImportError:
+    tqdm = None
 
 
 def get_tubes(client, initial_tube_list):
-    if initial_tube_list is None:
-        return client.list_tubes()
+    if not initial_tube_list:
+        return set(client.list_tubes())
     else:
         server_tubes = client.list_tubes()
         tubes = set()
@@ -13,3 +19,19 @@ def get_tubes(client, initial_tube_list):
             else:
                 tubes.add(tube)
         return tubes
+
+
+def prompt_yesno(prompt_message):
+    if sys.version_info < (3, 0):
+        response = raw_input(prompt_message).strip()
+    else:
+        response = input(prompt_message).strip()
+    if response != 'y':
+        raise ValueError('Got response {0} from prompt, aborting'.format(response))
+
+
+def progress(iterable, *args, **kwargs):
+    if tqdm is not None:
+        return tqdm.tqdm(iterable, *args, **kwargs)
+    else:
+        return iterable

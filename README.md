@@ -8,6 +8,8 @@
  - `python-argparse` if using Python 2.6 (not required on any newer version)
  - [`PyYAML`](http://pyyaml.org/) 3.x
 
+If [tqdm](https://github.com/tqdm/tqdm) is available, we will use it to display progress bars.
+
 ## Usage
 
 If you install with `python setup.py install` or through pip, this should drop a program named `beancmd` into your PYTHONHOME. Otherwise, you can use `PYTHONPATH=. python -m beancmd.beancmd` to get the same effect.

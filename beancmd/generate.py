@@ -50,7 +50,7 @@ def run(args):
 
     for tube in tubes:
         client.use(tube)
-        for i in range(args.number_of_tasks_per_tube):
+        for i in util.progress(range(args.number_of_tasks_per_tube)):
             data_size = random.randint(*args.task_size)
             data = non_cryptographically_random_bytes(data_size)
             if args.binary:

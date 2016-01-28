@@ -21,7 +21,10 @@ def run(args):
 
     tubes = util.get_tubes(client, args.tubes)
 
-    tube_column_length = max(len(l) for l in tubes)
+    if tubes:
+        tube_column_length = max(len(l) for l in tubes)
+    else:
+        tube_column_length = 1
 
     fmt_string = '| {{tube: <{0}}} | {{ready:>9}} | {{delayed:>9}} | {{buried:>9}} |'.format(tube_column_length)
 

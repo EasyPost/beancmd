@@ -23,9 +23,12 @@ def get_tubes(client, initial_tube_list):
 
 def prompt_yesno(prompt_message):
     if sys.version_info < (3, 0):
-        response = raw_input(prompt_message).strip()
+        import __builtin__
+        input_function = getattr(__builtin__, 'raw_input')
     else:
-        response = input(prompt_message).strip()
+        import builtin
+        input_function = getattr(builtin, 'input')
+    response = input_function(prompt_message).strip()
     if response != 'y':
         raise ValueError('Got response {0} from prompt, aborting'.format(response))
 

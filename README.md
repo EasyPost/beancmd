@@ -10,6 +10,8 @@
 
 If [tqdm](https://github.com/tqdm/tqdm) is available, we will use it to display progress bars.
 
+It's **highly** recommended to make sure that PyYAML builds its C extension; all migrations require lots and lots of YAML loading, and we see a 4x-6x performance improvement when using the C loader instead of the pure-Python loader.
+
 ## Usage
 
 If you install with `python setup.py install` or through pip, this should drop a program named `beancmd` into your PYTHONHOME. Otherwise, you can use `PYTHONPATH=. python -m beancmd.beancmd` to get the same effect.

@@ -3,6 +3,7 @@ import os.path
 import json
 
 import mock
+import pytest
 
 from .base import IntegrationBaseTestCase
 
@@ -223,9 +224,9 @@ class MigrateTestCase(IntegrationBaseTestCase):
 
         assert self.bs1.client.stats_tube('some-tube')['current-jobs-ready'] == 0
         assert self.bs1.client.stats_tube('some-tube')['current-jobs-delayed'] == 0
-        with self.assertRaises(simple_beanstalk.BeanstalkError):
+        with pytest.raises(simple_beanstalk.BeanstalkError):
             assert self.bs2.client.stats_tube('some-tube')['current-jobs-ready'] == 0
-        with self.assertRaises(simple_beanstalk.BeanstalkError):
+        with pytest.raises(simple_beanstalk.BeanstalkError):
             assert self.bs2.client.stats_tube('some-tube')['current-jobs-delayed'] == 0
         assert self.bs2.client.stats_tube('some-other-tube')['current-jobs-ready'] == 1
         assert self.bs2.client.stats_tube('some-other-tube')['current-jobs-delayed'] == 1

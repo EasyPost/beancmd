@@ -28,12 +28,15 @@ def setup_parser(parser=None):
                         help='Host of beanstalk server')
     parser.add_argument('-dp', '--dest-port', default=11300, type=int,
                         help='Port of beanstalk server (default %(default)s)')
+    parser.add_argument('-D', '--skip-delayed', action='store_true', help='Do not migrate any delayed jobs')
     parser.add_argument('-B', '--skip-buried', action='store_true', help='Do not migrate any buried jobs')
     parser.add_argument('-q', '--quiet', action='store_true', help='Be quieter')
     parser.add_argument('-l', '--log', type=argparse.FileType('a'), default=None,
                         help='Log a copy of all migrated jobs to a file as newline-delimited JSON')
     parser.add_argument('-n', '--num-jobs', type=int, default=None,
                         help='If passed, migrate at most N jobs')
+    parser.add_argument('-T', '--destination-tube', default=None,
+                        help='Tube into which to insert jobs. Only valid if migrating a single tube')
     parser.add_argument('tubes', type=str, nargs='*', help='Tubes to migrate (if not passed, migrates all)')
     return parser
 
@@ -44,7 +47,10 @@ def migrate_jobs(args, tubes, source_client, dest_client):
     def migrate_job(tube, job, use_on_dest=False):
         """migrate a single job from source_client to dest_client"""
         if use_on_dest:
-            dest_client.use(tube)
+            if args.destination_tube:
+                dest_client.use(args.destination_tube)
+            else:
+                dest_client.use(tube)
         job_stats = source_client.stats_job(job.job_id)
         if job_stats['state'] == 'delayed':
             delay = job_stats['time-left']
@@ -69,12 +75,15 @@ def migrate_jobs(args, tubes, source_client, dest_client):
     # statements so that these go quickly
     for tube in tubes:
         source_client.watch(tube)
-        dest_client.use(tube)
+        if args.destination_tube:
+            dest_client.use(args.destination_tube)
+        else:
+            dest_client.use(tube)
         tube_stats = source_client.stats_tube(tube)
         num_ready_jobs = tube_stats['current-jobs-ready']
 
         if not args.quiet:
-            print('Migrating {0} READY jobs on tube {1}'.format(num_ready_jobs, tube), file=sys.stderr)
+            print('Migrating ~{0} READY jobs on tube {1}'.format(num_ready_jobs, tube), file=sys.stderr)
         for job in util.progress(source_client.reserve_iter(), total=num_ready_jobs, unit='jobs'):
             migrate_job(tube, job)
             migrated_jobs += 1
@@ -87,19 +96,20 @@ def migrate_jobs(args, tubes, source_client, dest_client):
         # peek commands only work on the USEd tube, not the WATCHd tubes
         source_client.use(tube)
 
-        tube_stats = source_client.stats_tube(tube)
-        num_delayed_jobs = tube_stats['current-jobs-delayed']
+        if not args.skip_delayed:
+            tube_stats = source_client.stats_tube(tube)
+            num_delayed_jobs = tube_stats['current-jobs-delayed']
 
-        if not args.quiet:
-            print('Migrating {0} DELAYED jobs on tube {1}'.format(num_delayed_jobs, tube), file=sys.stderr)
+            if not args.quiet:
+                print('Migrating ~{0} DELAYED jobs on tube {1}'.format(num_delayed_jobs, tube), file=sys.stderr)
 
-        # XXX: this is racy. The job could pop out of the delayed iter and be picked up by a
-        # consumer while we're migrating it.
-        for job in util.progress(source_client.peek_delayed_iter(), total=num_delayed_jobs, unit='jobs'):
-            migrate_job(tube, job, True)
-            migrated_jobs += 1
-            if args.num_jobs and migrated_jobs >= args.num_jobs:
-                return migrated_jobs
+            # XXX: this is racy. The job could pop out of the delayed iter and be picked up by a
+            # consumer while we're migrating it.
+            for job in util.progress(source_client.peek_delayed_iter(), total=num_delayed_jobs, unit='jobs'):
+                migrate_job(tube, job, True)
+                migrated_jobs += 1
+                if args.num_jobs and migrated_jobs >= args.num_jobs:
+                    return migrated_jobs
 
         if not args.skip_buried:
 
@@ -107,7 +117,7 @@ def migrate_jobs(args, tubes, source_client, dest_client):
             num_buried_jobs = tube_stats['current-jobs-buried']
 
             if not args.quiet:
-                print('Migrating {0} DELAYED jobs on tube {1}'.format(num_buried_jobs, tube), file=sys.stderr)
+                print('Migrating ~{0} BURIED jobs on tube {1}'.format(num_buried_jobs, tube), file=sys.stderr)
 
             for job in util.progress(source_client.peek_buried_iter(), total=num_buried_jobs, unit='jobs'):
                 # XXX: there seems to be no way to re-bury this job on the other end (you can only bury
@@ -125,6 +135,13 @@ def run(args):
     dest_client = simple_beanstalk.BeanstalkClient(args.dest_host, args.dest_port)
 
     tubes = util.get_tubes(source_client, args.tubes)
+
+    if args.destination_tube and len(tubes) > 1:
+        raise ValueError(
+            'Cannot specify destination tube when migrating more than one tube (saw {0})'.format(
+                ', '.join(sorted(tubes))
+            )
+        )
 
     if not args.quiet:
         print('Beginning migration; source status:', file=sys.stderr)

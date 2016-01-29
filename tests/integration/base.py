@@ -64,6 +64,7 @@ class TestingBeanStalk(object):
                 raise BeanstalkProcessError(exit_status)
             try:
                 self.status()
+                self.client.watch('default')
                 return
             except (socket.error, OSError):
                 pass
@@ -105,3 +106,16 @@ class IntegrationBaseTestCase(TestCase):
         self.bs1.stop()
         self.bs2.stop()
         self.tqdm_patcher.stop()
+
+    def generate_jobs(self, client, tube, ready=0, delayed=0, buried=0, data=b'data', pri=65535, ttr=120):
+        client.use(tube)
+        client.watch(tube)
+        for _ in range(ready):
+            client.put_job(data, pri=pri, ttr=ttr, delay=0)
+        for _ in range(delayed):
+            client.put_job(data, pri=pri, ttr=ttr, delay=1000)
+        for _ in range(buried):
+            client.put_job(data, pri=pri, ttr=ttr, delay=0)
+            job_info = client.reserve_job()
+            client.bury_job(job_info.job_id)
+        client.ignore(tube)

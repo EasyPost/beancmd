@@ -1,7 +1,12 @@
+import base64
 import os.path
 import json
 
+import mock
+
 from .base import IntegrationBaseTestCase
+
+import simple_beanstalk
 
 from beancmd import migrate
 
@@ -155,14 +160,9 @@ class MigrateTestCase(IntegrationBaseTestCase):
         assert self.bs2.status()['current-jobs-reserved'] == 0
 
     def test_migrate_multiple_tubes(self):
-        self.bs1.client.use('some-tube')
-        self.bs1.client.put_job('1', delay=0)
-        self.bs1.client.put_job('2', delay=0)
-        self.bs1.client.use('some-other-tube')
-        self.bs1.client.put_job('3', delay=0)
-        self.bs1.client.put_job('4', delay=0)
-        self.bs1.client.use('ignored-tube')
-        self.bs1.client.put_job('5', delay=0)
+        self.generate_jobs(self.bs1.client, 'some-tube', 2)
+        self.generate_jobs(self.bs1.client, 'some-other-tube', 2)
+        self.generate_jobs(self.bs1.client, 'ignored-tube', 1)
 
         assert self.bs1.status()['current-jobs-ready'] == 5
 
@@ -181,9 +181,9 @@ class MigrateTestCase(IntegrationBaseTestCase):
         assert self.bs1.client.stats_tube('ignored-tube')['current-jobs-ready'] == 1
 
     def test_migrate_with_log(self):
-        self.bs1.client.use('some-tube')
-        self.bs1.client.put_job('data 1', delay=0)
-        self.bs1.client.put_job(b'invalid unicode \xad', delay=0)
+        job_data = b'lots of data might contain invalid unicode, like \xad'
+        b64_data = base64.b64encode(job_data).decode('ascii')
+        self.generate_jobs(self.bs1.client, 'some-tube', ready=2, data=job_data)
 
         assert self.bs1.status()['current-jobs-ready'] == 2
 
@@ -202,6 +202,55 @@ class MigrateTestCase(IntegrationBaseTestCase):
         with open(log_file, 'r') as log_f:
             lines = [json.loads(f.strip()) for f in log_f.readlines()]
             assert lines == [
-                {'tube': 'some-tube', 'delay': 0, 'ttr': 120, 'job_data': 'ZGF0YSAx', 'pri': 65536},
-                {'tube': 'some-tube', 'delay': 0, 'ttr': 120, 'job_data': 'aW52YWxpZCB1bmljb2RlIK0=', 'pri': 65536},
+                {'tube': 'some-tube', 'delay': 0, 'ttr': 120, 'job_data': b64_data, 'pri': 65535},
+                {'tube': 'some-tube', 'delay': 0, 'ttr': 120, 'job_data': b64_data, 'pri': 65535},
             ]
+
+    def test_migrate_rename_tube(self):
+        self.generate_jobs(self.bs1.client, 'some-tube', ready=1, delayed=1)
+
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-ready'] == 1
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-delayed'] == 1
+
+        parser = migrate.setup_parser()
+        args = parser.parse_args([
+            '-sh', self.bs1.host, '-sp', str(self.bs1.port),
+            '-dh', self.bs2.host, '-dp', str(self.bs2.port),
+            '-T', 'some-other-tube', '-q',
+            'some-tube',
+        ])
+        migrate.run(args)
+
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-ready'] == 0
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-delayed'] == 0
+        with self.assertRaises(simple_beanstalk.BeanstalkError):
+            assert self.bs2.client.stats_tube('some-tube')['current-jobs-ready'] == 0
+        with self.assertRaises(simple_beanstalk.BeanstalkError):
+            assert self.bs2.client.stats_tube('some-tube')['current-jobs-delayed'] == 0
+        assert self.bs2.client.stats_tube('some-other-tube')['current-jobs-ready'] == 1
+        assert self.bs2.client.stats_tube('some-other-tube')['current-jobs-delayed'] == 1
+
+    def test_verbose_output(self):
+        self.generate_jobs(self.bs1.client, 'some-tube', ready=1, delayed=1, buried=1)
+
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-ready'] == 1
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-delayed'] == 1
+        assert self.bs1.client.stats_tube('some-tube')['current-jobs-buried'] == 1
+
+        parser = migrate.setup_parser()
+        args = parser.parse_args([
+            '-sh', self.bs1.host, '-sp', str(self.bs1.port),
+            '-dh', self.bs2.host, '-dp', str(self.bs2.port),
+            'some-tube',
+        ])
+
+        with mock.patch('sys.stderr.write') as mock_stderr:
+            with mock.patch('sys.stdout.write') as mock_stdout:
+                migrate.run(args)
+        # stdout should never be written to
+        assert mock_stdout.mock_calls == []
+        mock_stderr.assert_has_calls([
+            mock.call('Migrating ~1 READY jobs on tube some-tube'),
+            mock.call('Migrating ~1 DELAYED jobs on tube some-tube'),
+            mock.call('Migrating ~1 BURIED jobs on tube some-tube'),
+        ], any_order=True)

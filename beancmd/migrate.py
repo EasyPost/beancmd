@@ -30,7 +30,7 @@ def setup_parser(parser=None):
                         help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('-B', '--skip-buried', action='store_true', help='Do not migrate any buried jobs')
     parser.add_argument('-q', '--quiet', action='store_true', help='Be quieter')
-    parser.add_argument('-l', '--log', type=argparse.FileType('w'), default=None,
+    parser.add_argument('-l', '--log', type=argparse.FileType('a'), default=None,
                         help='Log a copy of all migrated jobs to a file as newline-delimited JSON')
     parser.add_argument('-n', '--num-jobs', type=int, default=None,
                         help='If passed, migrate at most N jobs')

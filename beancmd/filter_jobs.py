@@ -17,7 +17,7 @@ def setup_parser(parser=None):
     parser.add_argument('-p', '--port', default=11300, type=int, help='Port of beanstalk server (default %(default)s)')
     parser.add_argument('-st', '--source-tube', required=True, help='Tube to pull jobs from')
     parser.add_argument('-dt', '--dest-tube', required=True, help='Tube to insert jobs into')
-    parser.add_argument('-l', '--log', type=argparse.FileType('a'), default=None,
+    parser.add_argument('-l', '--log', type=argparse.FileType('a'), default=None, required=True,
                         help='Log a copy of all jobs to a file as newline-delimited JSON')
     return parser
 
@@ -68,3 +68,4 @@ def run(args):
             migrate_or_delete(job)
         except Exception:
             source_client.release_job(job.job_id)
+            raise

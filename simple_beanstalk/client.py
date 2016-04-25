@@ -135,7 +135,6 @@ class BeanstalkClient(object):
         else:
             if not message.endswith('\r\n'):
                 message += '\r\n'
-            print(message)
             return socket.sendall(message.encode('utf-8'))
 
     @with_socket

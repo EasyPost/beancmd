@@ -135,6 +135,7 @@ class BeanstalkClient(object):
         else:
             if not message.endswith('\r\n'):
                 message += '\r\n'
+            print(message)
             return socket.sendall(message.encode('utf-8'))
 
     @with_socket
@@ -200,6 +201,12 @@ class BeanstalkClient(object):
             raise ValueError('Select a tube or two before reserving a job')
         self.send_message('reserve-with-timeout {0}'.format(timeout), socket)
         job_id, job_data = self.receive_id_and_data_with_prefix(b'RESERVED', socket)
+        return Job(job_id, job_data)
+
+    @with_socket
+    def peek_ready(self, socket):
+        self.send_message('peek-ready', socket)
+        job_id, job_data = self.receive_id_and_data_with_prefix(b'FOUND', socket)
         return Job(job_id, job_data)
 
     @with_socket

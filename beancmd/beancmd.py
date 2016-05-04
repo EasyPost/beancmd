@@ -6,16 +6,18 @@ from . import __version__
 from . import bury
 from . import flush
 from . import generate
+from . import list_tubes
 from . import migrate
+from . import purge_buried
 from . import replay
 from . import stats
-from . import list_tubes
 from . import stats_tubes
 
 
 COMMANDS = (
     ('bury', 'Bury the jobs on top of a tube', bury),
     ('flush', 'Delete all jobs from a set of tubes', flush),
+    ('purge_buried', 'Delete all buried jobs from a set of tubes', purge_buried),
     ('generate', 'Generate random data for testing', generate),
     ('migrate', 'Migrate jobs between beanstalkd instances', migrate),
     ('stats', 'Print out the stats of a beanstalk instance', stats),

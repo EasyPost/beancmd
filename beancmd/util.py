@@ -26,8 +26,8 @@ def prompt_yesno(prompt_message):
         import __builtin__
         input_function = getattr(__builtin__, 'raw_input')
     else:
-        import builtin
-        input_function = getattr(builtin, 'input')
+        import builtins
+        input_function = getattr(builtins, 'input')
     response = input_function(prompt_message).strip()
     if response != 'y':
         raise ValueError('Got response {0} from prompt, aborting'.format(response))

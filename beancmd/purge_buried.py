@@ -28,6 +28,7 @@ def run(args):
 
     client.watch('unused-fake-tube')
     for tube in tubes:
+        print('Purging {0}'.format(tube))
         client.watch(tube)
         client.use(tube)
         stats = client.stats_tube(tube)

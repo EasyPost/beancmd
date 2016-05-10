@@ -262,3 +262,14 @@ class BeanstalkClient(object):
     def kick_jobs(self, socket, num_jobs):
         self.send_message('kick {0}'.format(num_jobs), socket)
         return self.receive_id(socket)
+
+    @with_socket
+    def pause_tube(self, socket, tube, delay=3600):
+        delay = int(delay)
+        self.send_message('pause-tube {0} {1}'.format(tube, delay), socket)
+        return self.receive_word(socket, b'PAUSED')
+
+    @with_socket
+    def unpause_tube(self, socket, tube):
+        self.send_message('pause-tube {0} 0'.format(tube), socket)
+        return self.receive_word(socket, b'PAUSED')

@@ -2,7 +2,7 @@ from __future__ import print_function
 
 import argparse
 
-import simple_beanstalk
+import pystalk
 
 from . import util
 
@@ -17,7 +17,7 @@ def setup_parser(parser=None):
 
 
 def run(args):
-    client = simple_beanstalk.BeanstalkClient(args.host, args.port)
+    client = pystalk.BeanstalkClient(args.host, args.port)
 
     tubes = util.get_tubes(client, args.tubes)
 

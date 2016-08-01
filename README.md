@@ -1,4 +1,4 @@
-*beancmd* is a simple, self-contained command-line for [beanstalkd](http://kr.github.io/beanstalkd/). It contains its own, minimal, client (`simple_beanstalk`) and should function on Python 2.6 or above.
+*beancmd* is a simple ops-focused command-line for [beanstalkd](http://kr.github.io/beanstalkd/) written in Python.
 
 [![Circle CI](https://circleci.com/gh/EasyPost/beancmd.svg?style=svg&circle-token=2f6ae769a7e6d9c16a6724ff29abb4488421feec)](https://circleci.com/gh/EasyPost/beancmd)
 

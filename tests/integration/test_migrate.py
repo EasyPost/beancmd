@@ -7,7 +7,7 @@ import pytest
 
 from .base import IntegrationBaseTestCase
 
-import simple_beanstalk
+import pystalk
 
 from beancmd import migrate
 
@@ -224,9 +224,9 @@ class MigrateTestCase(IntegrationBaseTestCase):
 
         assert self.bs1.client.stats_tube('some-tube')['current-jobs-ready'] == 0
         assert self.bs1.client.stats_tube('some-tube')['current-jobs-delayed'] == 0
-        with pytest.raises(simple_beanstalk.BeanstalkError):
+        with pytest.raises(pystalk.BeanstalkError):
             assert self.bs2.client.stats_tube('some-tube')['current-jobs-ready'] == 0
-        with pytest.raises(simple_beanstalk.BeanstalkError):
+        with pytest.raises(pystalk.BeanstalkError):
             assert self.bs2.client.stats_tube('some-tube')['current-jobs-delayed'] == 0
         assert self.bs2.client.stats_tube('some-other-tube')['current-jobs-ready'] == 1
         assert self.bs2.client.stats_tube('some-other-tube')['current-jobs-delayed'] == 1

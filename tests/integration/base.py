@@ -13,7 +13,7 @@ from unittest import TestCase
 
 from beancmd import util
 
-import simple_beanstalk
+import pystalk
 
 
 class BeanstalkProcessError(Exception):
@@ -57,7 +57,7 @@ class TestingBeanStalk(object):
         time.sleep(0.02)
         self.p = subprocess.Popen(cmdline)
         start_time = time.time()
-        self.client = simple_beanstalk.BeanstalkClient(self.host, self.port)
+        self.client = pystalk.BeanstalkClient(self.host, self.port)
         while (time.time() - start_time) < self.MAX_STARTUP_TIME:
             if self.p.poll() is not None:
                 exit_status = self.p.returncode

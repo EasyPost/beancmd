@@ -8,7 +8,7 @@ import yaml
 
 from . import util
 
-import simple_beanstalk
+import pystalk
 
 
 def print_stats(client, fo):
@@ -131,8 +131,8 @@ def migrate_jobs(args, tubes, source_client, dest_client):
 
 
 def run(args):
-    source_client = simple_beanstalk.BeanstalkClient(args.source_host, args.source_port)
-    dest_client = simple_beanstalk.BeanstalkClient(args.dest_host, args.dest_port)
+    source_client = pystalk.BeanstalkClient(args.source_host, args.source_port)
+    dest_client = pystalk.BeanstalkClient(args.dest_host, args.dest_port)
 
     tubes = util.get_tubes(source_client, args.tubes)
 

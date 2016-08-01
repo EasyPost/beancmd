@@ -2,7 +2,7 @@ import argparse
 import base64
 import json
 
-import simple_beanstalk
+import pystalk
 
 
 def setup_parser(parser=None):
@@ -15,7 +15,7 @@ def setup_parser(parser=None):
 
 
 def run(args):
-    client = simple_beanstalk.BeanstalkClient(args.host, args.port)
+    client = pystalk.BeanstalkClient(args.host, args.port)
 
     for line in args.log_file:
         job = json.loads(line.rstrip())

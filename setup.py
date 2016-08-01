@@ -9,7 +9,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name="beancmd",
-    version="0.3",
+    version="0.3.1",
     author="James Brown",
     author_email="jbrown@easypost.com",
     url="https://github.com/easypost/beancmd",

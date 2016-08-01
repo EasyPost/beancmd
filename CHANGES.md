@@ -1,3 +1,7 @@
+0.3.1
+----
+- Switch to `pystalk` for beanstalk connectivity
+
 0.3
 ---
 - `pause` command for pausing and unpausing tubes

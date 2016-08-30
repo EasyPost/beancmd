@@ -1,3 +1,8 @@
+0.3.2
+-----
+- Add reserved jobs to the `stats_tubes` subcommand
+- Add `-m` argument to the `flush` subcommand
+
 0.3.1
 ----
 - Switch to `pystalk` for beanstalk connectivity

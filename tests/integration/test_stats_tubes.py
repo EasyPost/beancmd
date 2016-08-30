@@ -21,11 +21,11 @@ class StatsTubesTestCase(IntegrationBaseTestCase):
 
         mock_stdout.seek(0, 0)
         written = mock_stdout.getvalue()
-        expected = '''-------------------------------------------------
-|           |   ready   |  delayed  |  buried   |
--------------------------------------------------
-| default   |         0 |         0 |         0 |
-| some-tube |       100 |         0 |         0 |
--------------------------------------------------
+        expected = '''-------------------------------------------------------------
+|           | reserved  |   ready   |  delayed  |  buried   |
+-------------------------------------------------------------
+| default   |         0 |         0 |         0 |         0 |
+| some-tube |         0 |       100 |         0 |         0 |
+-------------------------------------------------------------
 '''
         assert written == expected

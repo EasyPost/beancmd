@@ -26,9 +26,13 @@ def run(args):
     else:
         tube_column_length = 1
 
-    fmt_string = '| {{tube: <{0}}} | {{ready:>9}} | {{delayed:>9}} | {{buried:>9}} |'.format(tube_column_length)
+    fmt_string = '| {{tube: <{0}}} | {{reserved:>9}} | {{ready:>9}} | {{delayed:>9}} | {{buried:>9}} |'.format(
+        tube_column_length
+    )
 
-    header_line = fmt_string.replace('>', '^').format(tube='', ready='ready', delayed='delayed', buried='buried')
+    header_line = fmt_string.replace('>', '^').format(
+        tube='', reserved='reserved', ready='ready', delayed='delayed', buried='buried'
+    )
     print('-' * len(header_line))
     print(header_line)
     print('-' * len(header_line))
@@ -36,6 +40,7 @@ def run(args):
         stats = client.stats_tube(tube)
         print(fmt_string.format(
             tube=tube,
+            reserved=stats['current-jobs-reserved'],
             ready=stats['current-jobs-ready'],
             delayed=stats['current-jobs-delayed'],
             buried=stats['current-jobs-buried'],

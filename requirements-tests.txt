@@ -2,4 +2,3 @@ pytest
 pytest-cov
 mock
 six
-flake8<3.0

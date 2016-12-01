@@ -1,9 +1,5 @@
 import argparse
-import base64
 import json
-import random
-
-from . import util
 
 import pystalk
 
@@ -25,5 +21,8 @@ def run(args):
     client.use(args.tube)
     fn = getattr(client, 'peek_{0}'.format(args.mode))
     job = fn()
-    print(job)
+    print(json.dumps({
+        'job_id': job.job_id,
+        'data': job.job_data.decode('utf-8')
+    }))
     return 0

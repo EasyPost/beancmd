@@ -23,6 +23,7 @@ def run(args):
     job = fn()
     print(json.dumps({
         'job_id': job.job_id,
+        'stats': client.stats_job(job.job_id),
         'data': job.job_data.decode('utf-8')
     }))
     return 0

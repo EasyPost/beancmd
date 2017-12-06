@@ -108,6 +108,7 @@ class IntegrationBaseTestCase(TestCase):
         self.tqdm_patcher.stop()
 
     def generate_jobs(self, client, tube, ready=0, delayed=0, buried=0, data=b'data', pri=65535, ttr=120):
+        client.watch('unused-default-tube')
         client.use(tube)
         client.watch(tube)
         for _ in range(ready):

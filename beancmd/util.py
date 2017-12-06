@@ -1,10 +1,7 @@
 import sys
 import fnmatch
 
-try:
-    import tqdm
-except ImportError:
-    tqdm = None
+import tqdm
 
 
 def get_tubes(client, initial_tube_list):

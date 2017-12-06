@@ -1,3 +1,8 @@
+0.4.0
+-----
+- Add `kick` subcommand
+- Drop Python 2.6, 3.3, and 3.4 from support list
+
 0.3.2
 -----
 - Add reserved jobs to the `stats_tubes` subcommand

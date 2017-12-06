@@ -6,6 +6,7 @@ from . import __version__
 from . import bury
 from . import flush
 from . import generate
+from . import kick
 from . import list_tubes
 from . import migrate
 from . import pause
@@ -28,6 +29,7 @@ COMMANDS = (
     ('list', 'List all tubes on a server', list_tubes),
     ('stats_tubes', 'Print out detailed information about a set of tubes', stats_tubes),
     ('pause', 'Pause and unpause tubes', pause),
+    ('kick', 'Kick jobs from the delayed and buried tubes', kick),
 )
 
 

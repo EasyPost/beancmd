@@ -32,7 +32,7 @@ class PeekTestCase(IntegrationBaseTestCase):
 
         mock_stdout.seek(0, 0)
         written = json.loads(mock_stdout.getvalue())
-        assert written == {'job_id': mock.ANY, 'data': 'some-tube 0'}
+        assert written == {'job_id': mock.ANY, 'data': 'some-tube 0', 'stats': mock.ANY}
 
     def test_peek_delayed(self):
         parser = peek.setup_parser()
@@ -45,4 +45,4 @@ class PeekTestCase(IntegrationBaseTestCase):
 
         mock_stdout.seek(0, 0)
         written = json.loads(mock_stdout.getvalue())
-        assert written == {'job_id': mock.ANY, 'data': 'some-tube d0'}
+        assert written == {'job_id': mock.ANY, 'data': 'some-tube d0', 'stats': mock.ANY}

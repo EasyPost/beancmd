@@ -4,7 +4,7 @@
 
 ## Dependencies
 
- - Python 2.6+ or 3.3+
+ - Python 2.6+ or 3.5+
  - `python-argparse` if using Python 2.6 (not required on any newer version)
  - [`PyYAML`](http://pyyaml.org/) 3.x
  - [`pystalk`](https://github.com/easypost/pystalk)

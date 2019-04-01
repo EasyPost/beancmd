@@ -1,5 +1,5 @@
-pytest
-pytest-cov
+pytest==4.4.0
+pytest-cov==2.6.1
 flake8
 mock
 six

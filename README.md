@@ -1,6 +1,6 @@
 *beancmd* is a simple ops-focused command-line for [beanstalkd](http://kr.github.io/beanstalkd/) written in Python.
 
-[![Build Status](https://travis-ci.org/EasyPost/beancmd.svg?branch=master)](https://travis-ci.org/EasyPost/beancmd)
+[![Build Status](https://travis-ci.com/EasyPost/beancmd.svg?branch=master)](https://travis-ci.com/EasyPost/beancmd)
 
 ## Dependencies
 

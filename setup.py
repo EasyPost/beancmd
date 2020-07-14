@@ -9,7 +9,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name="beancmd",
-    version="0.4.1",
+    version="0.4.2",
     author="James Brown",
     author_email="jbrown@easypost.com",
     url="https://github.com/easypost/beancmd",
@@ -17,7 +17,7 @@ setup(
     license="ISC",
     install_requires=install_requires,
     include_package_data=True,
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests', 'tests.*']),
     entry_points={
         'console_scripts': [
             'beancmd = beancmd.beancmd:main',

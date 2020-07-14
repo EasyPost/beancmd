@@ -1,3 +1,7 @@
+0.4.2
+-----
+- Do not include tests in distributed package even when not processing `MANIFEST.in`
+
 0.4.1
 -----
 - Do not include tests in distributed package

@@ -1,3 +1,7 @@
+0.4.1
+-----
+- Do not include tests in distributed package
+
 0.4.0
 -----
 - Add `kick` subcommand

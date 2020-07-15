@@ -22,7 +22,7 @@ def run(args):
     tubes = util.get_tubes(client, args.tubes)
 
     if tubes:
-        tube_column_length = max(len(l) for l in tubes)
+        tube_column_length = max(len(tcl) for tcl in tubes)
     else:
         tube_column_length = 1
 

@@ -52,7 +52,7 @@ class TestingBeanStalk(object):
         s.close()
         self.host = host
         self.port = port
-        program = os.environ.get('BEANSTALKD_PATH', 'beanstalkd')
+        program = os.path.expanduser(os.environ.get('BEANSTALKD_PATH', 'beanstalkd'))
         cmdline = [program, '-b', self.wal_directory, '-l', self.host, '-p', str(self.port)]
         # give beanstalkd enough time to exit if the port is already in use
         time.sleep(0.02)

@@ -4,8 +4,8 @@
 
 ## Dependencies
 
- - Python 2.7+ or 3.5+
- - [`PyYAML`](http://pyyaml.org/) 3.x
+ - Python 3.6+
+ - [`PyYAML`](http://pyyaml.org/) 3+
  - [`pystalk`](https://github.com/easypost/pystalk)
 
 If [tqdm](https://github.com/tqdm/tqdm) is available, we will use it to display progress bars.

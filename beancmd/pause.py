@@ -21,7 +21,7 @@ def setup_parser(parser=None):
 def run(args):
     client = pystalk.BeanstalkClient(args.host, args.port)
 
-    tubes = util.get_tubes(client, args.tubes)
+    tubes = util.verify_tubes(client, args.tubes)
 
     for tube in tubes:
         stats = client.stats_tube(tube)

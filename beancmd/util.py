@@ -3,6 +3,28 @@ import fnmatch
 
 import tqdm
 
+def verify_tubes(client, initial_tube_list):
+    if not initial_tube_list:
+        return set(client.list_tubes())
+    else:
+        server_tubes = client.list_tubes()
+        tubes = set()
+        missing_tubes = []
+        for tube in initial_tube_list:
+            if '*' in tube or '?' in tube:
+                tubes |= set(f for f in server_tubes if fnmatch.fnmatch(f, tube))
+            elif tube in server_tubes:
+                tubes.add(tube)
+            else:
+                missing_tubes.append(tube)
+        if missing_tubes:
+            raise ValueError('Unable to find requested tubes ({0}) in server tubes ({1})'
+                             .format(
+                                 missing_tubes,
+                                 server_tubes
+                             )
+                             )
+        return tubes
 
 def get_tubes(client, initial_tube_list):
     if not initial_tube_list:

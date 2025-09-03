@@ -31,7 +31,7 @@ jobs:
           make
           mv beanstalkd ~/beanstalks/
       - name: set up python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.pythonversion }}
       - name: install dependencies

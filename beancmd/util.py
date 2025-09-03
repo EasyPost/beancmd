@@ -3,6 +3,7 @@ import fnmatch
 
 import tqdm
 
+
 def verify_tubes(client, initial_tube_list):
     if not initial_tube_list:
         return set(client.list_tubes())
@@ -25,6 +26,7 @@ def verify_tubes(client, initial_tube_list):
                              )
                              )
         return tubes
+
 
 def get_tubes(client, initial_tube_list):
     if not initial_tube_list:

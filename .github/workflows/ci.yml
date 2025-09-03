@@ -9,10 +9,10 @@ jobs:
   run-tests:
     env:
       BEANSTALK_VERSION: '1.12'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        pythonversion: ['3.6', '3.7', '3.8', '3.9', 'pypy-3.6']
+        pythonversion: ['3.9', 'pypy-3.6']
     steps:
       - uses: actions/checkout@v2
       - name: cache beanstalkd

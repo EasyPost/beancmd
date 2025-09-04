@@ -49,7 +49,11 @@ def main():
         parser.print_help()
         return 2
 
-    return args.func(args)
+    try:
+        return args.func(args)
+    except ValueError as ve:
+        print('Could not run command: {0}'.format(ve))
+        return 2
 
 
 if __name__ == '__main__':

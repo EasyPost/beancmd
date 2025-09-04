@@ -1,6 +1,7 @@
 from .base import IntegrationBaseTestCase
 
 import mock
+from mock import call
 
 from beancmd import list_tubes
 
@@ -16,4 +17,8 @@ class ListTubesTestCase(IntegrationBaseTestCase):
         ])
         with mock.patch('sys.stdout.write') as mock_sys_stdout_write:
             list_tubes.run(args)
-        assert mock_sys_stdout_write.called_once_with('bar\nbaz\ndefault\nfoo\n')
+
+            mock_sys_stdout_write.assert_has_calls([
+                call('bar\nbaz\ndefault\nfoo'),
+                call('\n')
+            ])

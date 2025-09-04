@@ -37,11 +37,11 @@ run: venv/requirements_installed
 ## test - Run unit tests
 test: venv/requirements_installed venv/test_requirements_installed
 ifeq ($(EP_ENVIRONMENT), test)
-	withenv ./venv/bin/py.test --cov beancmd --cov-report=term-missing --timeout=30 --junit-xml="${EPCI_JUNIT_TEST_RESULTS}/pytest.xml" tests/
+	${WITHENV} ./venv/bin/py.test --cov beancmd --cov-report=term-missing --timeout=30 --junit-xml="${EPCI_JUNIT_TEST_RESULTS}/pytest.xml" tests/
 else
-	withenv ./venv/bin/py.test --timeout=30 --cov-report=term-missing --cov=beancmd tests/
+	${WITHENV} ./venv/bin/py.test --timeout=30 --cov-report=term-missing --cov=beancmd tests/
 endif
-	venv/bin/flake8 beancmd/ tests/
+	${WITHENV} venv/bin/flake8 beancmd/ tests/
 
 .PHONY: clean help install run test
 

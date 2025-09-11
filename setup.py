@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from beancmd import __version__
 
 
 install_requires = []
@@ -9,9 +10,9 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name="beancmd",
-    version="0.4.2",
-    author="James Brown",
-    author_email="jbrown@easypost.com",
+    version=__version__,
+    author="EasyPost",
+    author_email="support@easypost.com",
     url="https://github.com/easypost/beancmd",
     description="Self-contained command-line tool for administrating beanstalkd",
     license="ISC",
@@ -23,14 +24,12 @@ setup(
             'beancmd = beancmd.beancmd:main',
         ]
     },
-    python_requires='>=3.6, <4',
+    python_requires='>=3.9, <4',
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Intended Audience :: System Administrators",
         "Operating System :: OS Independent",
         "Topic :: Database",

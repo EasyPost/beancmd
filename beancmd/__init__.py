@@ -1,3 +1,3 @@
-version_info = (0, 4, 3)
+version_info = (0, 5, 0)
 __version__ = '.'.join(str(s) for s in version_info)
-__author__ = 'James Brown <jbrown@easypost.com>'
+__author__ = 'EasyPost <support@easypost.com>'

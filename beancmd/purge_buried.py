@@ -18,7 +18,7 @@ def setup_parser(parser=None):
 def run(args):
     client = pystalk.BeanstalkClient(args.host, args.port)
 
-    tubes = util.get_tubes(client, args.tubes)
+    tubes = util.verify_tubes(client, args.tubes)
 
     if not args.yes:
         util.prompt_yesno('Are you sure you want to purge all buried jobs from tubes {0} (y/N)? '.format(

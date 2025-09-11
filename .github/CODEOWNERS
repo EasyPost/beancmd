@@ -1,0 +1,10 @@
+## These are the standard rules for all EasyPost repositories, this should be
+## updated as needed.
+##
+
+# By default all the files in this repo are owned by the team that owns the repo.
+* @easypost/infra-eng
+
+# The devtools team owns the codeowners file, this is for auditing purposes
+.github/CODEOWNERS @easypost/dev-tools
+

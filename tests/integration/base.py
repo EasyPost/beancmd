@@ -45,11 +45,11 @@ class TestingBeanStalk(object):
 
     def try_startup(self):
         # get a port to bind to
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind(('localhost', 0))
-        host, port = s.getsockname()
-        s.close()
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind(('localhost', 0))
+            host, port = s.getsockname()
+            s.close()
         self.host = host
         self.port = port
         program = os.path.expanduser(os.environ.get('BEANSTALKD_PATH', 'beanstalkd'))
@@ -77,21 +77,23 @@ class TestingBeanStalk(object):
         self.p.wait()
 
     def status(self):
-        s = socket.create_connection((self.host, self.port), timeout=0.25)
-        s.sendall(b'stats\r\n')
-        top, rest = s.recv(1024).split(b'\r\n', 1)
-        status, count = top.split(b' ')
-        count = int(count) + 2
-        bio = io.BytesIO()
-        bytes_read = len(rest)
-        bio.write(rest)
-        while bytes_read < count:
-            message = s.recv(count - bytes_read)
-            if not message:
-                break
-            bio.write(message)
-        bio.seek(0, 0)
-        return yaml.safe_load(bio)
+        with socket.create_connection((self.host, self.port), timeout=0.25) as s:
+            s.sendall(b'stats\r\n')
+            raw = s.recv(1024)
+            top, rest = raw.split(b'\r\n', 1)
+            status, count = top.split(b' ')
+            count = int(count) + 2
+            bio = io.BytesIO()
+            bytes_read = len(rest)
+            bio.write(rest)
+            while bytes_read < count:
+                message = s.recv(count - bytes_read)
+                if not message:
+                    break
+                bio.write(message)
+                bytes_read += len(message)
+            bio.seek(0, 0)
+            return yaml.safe_load(bio)
 
 
 class IntegrationBaseTestCase(TestCase):

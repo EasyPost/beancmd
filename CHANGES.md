@@ -1,3 +1,10 @@
+0.5.0
+_____
+- The `bury`, `flush`, `kick`, `pause`, and `purge_buried` commands now verify that,
+if given a specific set of tube names, those tubes exist on the given server before
+proceeding. This is in order to reduce confusion for sensitive or destructive 
+commands.
+
 0.4.2
 -----
 - Do not include tests in distributed package even when not processing `MANIFEST.in`

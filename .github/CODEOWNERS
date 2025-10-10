@@ -3,7 +3,7 @@
 ##
 
 # By default all the files in this repo are owned by the team that owns the repo.
-* @easypost/infra-eng
+* @easypost/infra-eng @EasyPost/easypost-public-maintainers
 
 # The devtools team owns the codeowners file, this is for auditing purposes
 .github/CODEOWNERS @easypost/dev-tools
